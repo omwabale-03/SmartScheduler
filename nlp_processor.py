@@ -319,7 +319,7 @@ class NLPProcessor:
         # Check for task listing/viewing commands
         elif any(phrase in text_lower for phrase in [
             'show task', 'show all task', 'list task', 'view task', 
-            'what are my task', 'display task', 'get task'
+            'what are my task', 'display task', 'get task', 'show my task'
         ]):
             result['command_type'] = 'list_tasks'
             
@@ -334,6 +334,10 @@ class NLPProcessor:
                 result['data']['timeframe'] = 'next_week'
             elif 'high priority' in text_lower or 'important' in text_lower:
                 result['data']['priority'] = 'high'
+            
+            # Default to today if no timeframe specified
+            if 'timeframe' not in result['data']:
+                result['data']['timeframe'] = 'today'
             
             # Extract category if mentioned
             doc = self.nlp(text_lower)
