@@ -186,6 +186,9 @@ def dashboard():
         user_id=current_user.id
     ).order_by(UserActivity.timestamp.desc()).limit(5).all()
     
+    # Add current date for the dashboard
+    now = datetime.utcnow()
+    
     return render_template(
         'dashboard.html',
         today_tasks=today_tasks,
@@ -195,7 +198,8 @@ def dashboard():
         completed_today=completed_today,
         total_today=total_today,
         user_preferences=user_preferences,
-        recent_activity=recent_activity
+        recent_activity=recent_activity,
+        now=now
     )
 
 @app.route('/tasks')
