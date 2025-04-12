@@ -1,0 +1,161 @@
+{% extends "layout.html" %}
+
+{% block title %}Tasks - TimeMaster AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-2">Tasks</h1>
+            <p class="text-muted">Manage all your tasks and activities</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('create_task') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Create New Task
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="filters d-flex align-items-center flex-wrap">
+                            <!-- Status Filter -->
+                            <div class="dropdown me-3 mb-2 mb-md-0">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Status: {{ status_filter|capitalize if status_filter != 'all' else 'All' }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item {% if status_filter == 'all' %}active{% endif %}" href="{{ url_for('task_list', status='all', timeframe=timeframe) }}">All</a></li>
+                                    <li><a class="dropdown-item {% if status_filter == 'pending' %}active{% endif %}" href="{{ url_for('task_list', status='pending', timeframe=timeframe) }}">Pending</a></li>
+                                    <li><a class="dropdown-item {% if status_filter == 'completed' %}active{% endif %}" href="{{ url_for('task_list', status='completed', timeframe=timeframe) }}">Completed</a></li>
+                                    <li><a class="dropdown-item {% if status_filter == 'cancelled' %}active{% endif %}" href="{{ url_for('task_list', status='cancelled', timeframe=timeframe) }}">Cancelled</a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Timeframe Filter -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Timeframe: {{ timeframe|replace('_', ' ')|capitalize if timeframe != 'all' else 'All' }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item {% if timeframe == 'all' %}active{% endif %}" href="{{ url_for('task_list', status=status_filter, timeframe='all') }}">All</a></li>
+                                    <li><a class="dropdown-item {% if timeframe == 'today' %}active{% endif %}" href="{{ url_for('task_list', status=status_filter, timeframe='today') }}">Today</a></li>
+                                    <li><a class="dropdown-item {% if timeframe == 'this_week' %}active{% endif %}" href="{{ url_for('task_list', status=status_filter, timeframe='this_week') }}">This Week</a></li>
+                                    <li><a class="dropdown-item {% if timeframe == 'upcoming' %}active{% endif %}" href="{{ url_for('task_list', status=status_filter, timeframe='upcoming') }}">Upcoming</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <span class="badge bg-primary">{{ tasks|length }} tasks</span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Due Date</th>
+                                    <th>Time</th>
+                                    <th>Priority</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr class="{% if task.status == 'completed' %}table-active{% endif %}">
+                                    <td class="{% if task.status == 'completed' %}text-decoration-line-through{% endif %}">
+                                        {{ task.title }}
+                                    </td>
+                                    <td>
+                                        {% if task.due_date %}
+                                        {{ task.due_date.strftime('%b %d, %Y') }}
+                                        {% else %}
+                                        No due date
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.start_time %}
+                                        {{ task.start_time.strftime('%I:%M %p') }}
+                                        {% if task.end_time %}
+                                        - {{ task.end_time.strftime('%I:%M %p') }}
+                                        {% endif %}
+                                        {% else %}
+                                        All day
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge priority-badge-{{ task.priority }}">
+                                            {% if task.priority >= 4 %}High
+                                            {% elif task.priority >= 2 %}Medium
+                                            {% else %}Low
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if task.category %}
+                                        <span class="badge bg-secondary">{{ task.category }}</span>
+                                        {% else %}
+                                        <span class="text-muted">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ task.status == 'completed' and 'success' or task.status == 'cancelled' and 'danger' or 'warning' }}">
+                                            {{ task.status|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('view_task', task_id=task.id) }}" class="btn btn-info">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-warning">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% if task.status != 'completed' %}
+                                            <form action="{{ url_for('mark_task_complete', task_id=task.id) }}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-success btn-complete-task">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                            <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-danger btn-delete-task">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-clipboard-check display-4 text-muted mb-3"></i>
+                        <h3>No tasks found</h3>
+                        <p class="text-muted">
+                            {% if status_filter != 'all' or timeframe != 'all' %}
+                            Try changing the filters or 
+                            {% endif %}
+                            create a new task to get started.
+                        </p>
+                        <a href="{{ url_for('create_task') }}" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-lg"></i> Create New Task
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

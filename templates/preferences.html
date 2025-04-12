@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block title %}Preferences - TimeMaster AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <h1 class="mb-0 h3">User Preferences</h1>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('update_preferences') }}" method="post">
+                        
+                        <!-- Working Hours Section -->
+                        <div class="preferences-section">
+                            <h4><i class="bi bi-clock me-2"></i>Working Hours</h4>
+                            <p class="text-muted">Set your typical working hours to help the AI schedule tasks effectively.</p>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="working_hours_start" class="form-label">Start Time</label>
+                                    <input type="time" class="form-control" id="working_hours_start" name="working_hours_start" 
+                                        value="{{ preferences.working_hours_start.strftime('%H:%M') if preferences.working_hours_start else '09:00' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="working_hours_end" class="form-label">End Time</label>
+                                    <input type="time" class="form-control" id="working_hours_end" name="working_hours_end" 
+                                        value="{{ preferences.working_hours_end.strftime('%H:%M') if preferences.working_hours_end else '17:00' }}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="break_duration" class="form-label">Break Duration (minutes)</label>
+                                <input type="number" class="form-control" id="break_duration" name="break_duration" min="5" max="120" step="5" 
+                                    value="{{ preferences.break_duration }}">
+                                <div class="form-text">Recommended breaks between tasks</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Productivity Peaks Section -->
+                        <div class="preferences-section">
+                            <h4><i class="bi bi-graph-up me-2"></i>Productivity Peak Hours</h4>
+                            <p class="text-muted">Indicate when you're most productive to optimize task scheduling.</p>
+                            
+                            {% set peak_hours = preferences.get_productivity_peak_hours() %}
+                            
+                            {% for i in range(3) %}
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-5">
+                                    <label for="peak_start_{{ i }}" class="form-label">Peak {{ i+1 }} Start</label>
+                                    <input type="time" class="form-control" id="peak_start_{{ i }}" name="peak_start_{{ i }}" 
+                                        value="{% if peak_hours and peak_hours|length > i %}{{ peak_hours[i].split('-')[0] }}{% endif %}">
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="peak_end_{{ i }}" class="form-label">Peak {{ i+1 }} End</label>
+                                    <input type="time" class="form-control" id="peak_end_{{ i }}" name="peak_end_{{ i }}" 
+                                        value="{% if peak_hours and peak_hours|length > i %}{{ peak_hours[i].split('-')[1] }}{% endif %}">
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    {% if i > 0 %}
+                                    <button type="button" class="btn btn-outline-danger mb-3" onclick="clearPeakHours({{ i }})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="mb-3">
+                                <label for="preferred_task_duration" class="form-label">Preferred Task Duration (minutes)</label>
+                                <input type="number" class="form-control" id="preferred_task_duration" name="preferred_task_duration" min="15" max="240" step="15" 
+                                    value="{{ preferences.preferred_task_duration }}">
+                                <div class="form-text">Default duration for tasks without specified times</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notification Preferences -->
+                        <div class="preferences-section">
+                            <h4><i class="bi bi-bell me-2"></i>Notification Preferences</h4>
+                            <p class="text-muted">Choose how you want to receive task reminders and notifications.</p>
+                            
+                            {% set notification_prefs = preferences.get_notification_preferences() %}
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications"
+                                    {{ 'checked' if 'email' in notification_prefs }}>
+                                <label class="form-check-label" for="email_notifications">
+                                    Email Notifications
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="web_notifications" name="web_notifications"
+                                    {{ 'checked' if 'web' in notification_prefs }}>
+                                <label class="form-check-label" for="web_notifications">
+                                    Web Notifications
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Calendar Integration -->
+                        <div class="preferences-section">
+                            <h4><i class="bi bi-calendar me-2"></i>Calendar Integration</h4>
+                            <p class="text-muted">Connect with Google Calendar to sync your tasks and events.</p>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-auto">
+                                        <p class="mb-0">Google Calendar Status:
+                                            {% if preferences.calendar_connected %}
+                                            <span class="calendar-connected">
+                                                <i class="bi bi-check-circle"></i> Connected
+                                            </span>
+                                            {% else %}
+                                            <span class="calendar-disconnected">
+                                                <i class="bi bi-x-circle"></i> Not Connected
+                                            </span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    
+                                    {% if preferences.calendar_connected %}
+                                    <form action="{{ url_for('disconnect_calendar') }}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-link-break"></i> Disconnect
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <a href="{{ url_for('authorize_calendar') }}" class="btn btn-primary">
+                                        <i class="bi bi-google"></i> Connect Google Calendar
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Preferences
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function clearPeakHours(index) {
+    document.getElementById(`peak_start_${index}`).value = '';
+    document.getElementById(`peak_end_${index}`).value = '';
+}
+</script>
+{% endblock %}

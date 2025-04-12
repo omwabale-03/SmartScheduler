@@ -1,0 +1,301 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - TimeMaster AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">Dashboard</h1>
+                <p class="text-muted">Welcome back, {{ current_user.username }}! Here's your time management overview.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <form action="{{ url_for('optimize_schedule') }}" method="post" class="mb-2">
+                    <input type="hidden" name="date" value="{{ now.strftime('%Y-%m-%d') }}">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-magic"></i> Optimize Today's Schedule
+                    </button>
+                </form>
+                <form action="{{ url_for('update_priorities') }}" method="post">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-repeat"></i> Update Task Priorities
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-4">
+        <!-- Task Completion Card -->
+        <div class="col-md-4">
+            <div class="card stat-card bg-dark">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle stat-icon text-success"></i>
+                    <h5 class="card-title">Task Completion</h5>
+                    <div class="chart-container" style="height: 150px;">
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                    <p class="mt-2">{{ completed_today }} of {{ total_today }} tasks completed today</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- High Priority Tasks Card -->
+        <div class="col-md-4">
+            <div class="card stat-card bg-dark">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle stat-icon text-warning"></i>
+                    <h5 class="card-title">High Priority Tasks</h5>
+                    <p class="card-text">You have {{ high_priority_tasks|length }} high priority tasks</p>
+                    <ul class="list-group list-group-flush">
+                        {% for task in high_priority_tasks[:3] %}
+                        <li class="list-group-item bg-dark border-secondary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-truncate">
+                                    <span class="badge priority-badge-{{ task.priority }}">!</span>
+                                    {{ task.title }}
+                                </div>
+                                <a href="{{ url_for('view_task', task_id=task.id) }}" class="btn btn-sm btn-outline-info">View</a>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item bg-dark border-secondary">No high priority tasks</li>
+                        {% endfor %}
+                    </ul>
+                    {% if high_priority_tasks|length > 3 %}
+                    <div class="text-center mt-2">
+                        <a href="{{ url_for('task_list') }}?priority=high" class="btn btn-sm btn-outline-light">View All</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upcoming Schedule Card -->
+        <div class="col-md-4">
+            <div class="card stat-card bg-dark">
+                <div class="card-body">
+                    <i class="bi bi-calendar-week stat-icon text-primary"></i>
+                    <h5 class="card-title">Today's Schedule</h5>
+                    <div class="today-schedule">
+                        {% if today_tasks %}
+                            {% for task in today_tasks[:4] %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="text-truncate {% if task.status == 'completed' %}task-status-completed{% endif %}">
+                                    {% if task.start_time %}
+                                    <small class="task-time">{{ task.start_time.strftime('%I:%M %p') }}</small><br>
+                                    {% endif %}
+                                    {{ task.title }}
+                                </div>
+                                <span class="task-priority" data-priority="{{ task.priority }}">
+                                    {% for i in range(task.priority) %}
+                                    <i class="bi bi-star-fill"></i>
+                                    {% endfor %}
+                                </span>
+                            </div>
+                            {% endfor %}
+                            
+                            {% if today_tasks|length > 4 %}
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('task_list') }}?timeframe=today" class="btn btn-sm btn-outline-light">View All ({{ today_tasks|length }})</a>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-center text-muted">No tasks scheduled for today</p>
+                            <div class="text-center mt-3">
+                                <a href="{{ url_for('create_task') }}" class="btn btn-sm btn-outline-primary">Add Task</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Today's Tasks -->
+        <div class="col-md-8">
+            <div class="card bg-dark">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Today's Tasks</h5>
+                    <a href="{{ url_for('create_task') }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus"></i> New Task
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if today_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Time</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in today_tasks %}
+                                <tr class="{% if task.status == 'completed' %}table-active{% endif %}">
+                                    <td class="{% if task.status == 'completed' %}text-decoration-line-through{% endif %}">
+                                        {{ task.title }}
+                                        {% if task.category %}
+                                        <span class="badge bg-secondary">{{ task.category }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.start_time %}
+                                        {{ task.start_time.strftime('%I:%M %p') }}
+                                        {% if task.end_time %}
+                                        - {{ task.end_time.strftime('%I:%M %p') }}
+                                        {% endif %}
+                                        {% else %}
+                                        All day
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge priority-badge-{{ task.priority }}">
+                                            {% if task.priority >= 4 %}High
+                                            {% elif task.priority >= 2 %}Medium
+                                            {% else %}Low
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ task.status == 'completed' and 'success' or task.status == 'cancelled' and 'danger' or 'warning' }}">
+                                            {{ task.status|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('view_task', task_id=task.id) }}" class="btn btn-info">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn btn-warning">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% if task.status != 'completed' %}
+                                            <form action="{{ url_for('mark_task_complete', task_id=task.id) }}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-success btn-complete-task">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No tasks scheduled for today</p>
+                        <a href="{{ url_for('create_task') }}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Add Your First Task
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upcoming Tasks & Activity -->
+        <div class="col-md-4">
+            <!-- Upcoming Tasks -->
+            <div class="card bg-dark mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Upcoming Tasks</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for task in upcoming_tasks[:5] %}
+                        <li class="list-group-item bg-dark border-secondary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted d-block">{{ task.due_date.strftime('%a, %b %d') }}</small>
+                                    <span class="{% if task.status == 'completed' %}text-decoration-line-through{% endif %}">
+                                        {{ task.title }}
+                                    </span>
+                                </div>
+                                <span class="task-priority" data-priority="{{ task.priority }}">
+                                    <i class="bi bi-star-fill"></i>
+                                    {% if task.priority > 1 %}<i class="bi bi-star-fill"></i>{% endif %}
+                                    {% if task.priority > 2 %}<i class="bi bi-star-fill"></i>{% endif %}
+                                </span>
+                            </div>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item bg-dark border-secondary text-center py-4">
+                            <p class="text-muted mb-0">No upcoming tasks</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% if upcoming_tasks|length > 5 %}
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('task_list') }}?timeframe=upcoming" class="btn btn-sm btn-outline-light">
+                            View All Upcoming Tasks
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for activity in recent_activity %}
+                        <li class="list-group-item bg-dark border-secondary">
+                            <small class="text-muted d-block">{{ activity.timestamp.strftime('%b %d, %I:%M %p') }}</small>
+                            <div>
+                                {% if activity.activity_type == 'create_task' %}
+                                <i class="bi bi-plus-circle text-success"></i> Created a new task
+                                {% elif activity.activity_type == 'update_task' %}
+                                <i class="bi bi-pencil text-warning"></i> Updated a task
+                                {% elif activity.activity_type == 'delete_task' %}
+                                <i class="bi bi-trash text-danger"></i> Deleted task "{{ activity.details }}"
+                                {% elif activity.activity_type == 'task_completed' %}
+                                <i class="bi bi-check-circle text-success"></i> Completed a task
+                                {% elif activity.activity_type == 'login' %}
+                                <i class="bi bi-box-arrow-in-right text-info"></i> Logged in
+                                {% elif activity.activity_type == 'logout' %}
+                                <i class="bi bi-box-arrow-left text-info"></i> Logged out
+                                {% elif 'calendar' in activity.activity_type %}
+                                <i class="bi bi-calendar text-primary"></i> 
+                                {% if activity.activity_type == 'connect_calendar' %}
+                                Connected Google Calendar
+                                {% else %}
+                                Disconnected Google Calendar
+                                {% endif %}
+                                {% else %}
+                                <i class="bi bi-activity"></i> {{ activity.activity_type.replace('_', ' ').capitalize() }}
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item bg-dark border-secondary text-center py-4">
+                            <p class="text-muted mb-0">No recent activity</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Create completion rate chart
+    createCompletionChart('completionChart', {{ completed_today }}, {{ total_today }});
+});
+</script>
+{% endblock %}

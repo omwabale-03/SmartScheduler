@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+
+{% block title %}TimeMaster AI - Smart Time Management Assistant{% endblock %}
+
+{% block content %}
+<section class="hero-section text-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="display-4 fw-bold mb-4">Master Your Time with AI</h1>
+                <p class="lead mb-4">TimeMaster AI is your personal assistant for intelligent time management, powered by machine learning and natural language processing.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">Login</a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="text-center p-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="350" height="350" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-light opacity-75">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                        <path d="M18 16.5 19 21l-4-1-4 1-1-4.5"/>
+                        <path d="M16 7a4 4 0 00-8 0"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Intelligent Features</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100 bg-dark">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-robot feature-icon"></i>
+                        <h3 class="card-title">AI Assistant</h3>
+                        <p class="card-text">Interact naturally with our AI assistant to schedule tasks, get reminders, and optimize your day - just type what you need in plain English.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 bg-dark">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-bar-chart feature-icon"></i>
+                        <h3 class="card-title">Smart Prioritization</h3>
+                        <p class="card-text">Our machine learning algorithms analyze your tasks and habits to prioritize what matters most, helping you focus on high-impact activities.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 bg-dark">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-calendar-check feature-icon"></i>
+                        <h3 class="card-title">Calendar Integration</h3>
+                        <p class="card-text">Seamlessly sync with Google Calendar to keep all your appointments and tasks in one place, accessible from any device.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 bg-dark">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-bell feature-icon"></i>
+                        <h3 class="card-title">Smart Reminders</h3>
+                        <p class="card-text">Never miss an important deadline with our intelligent notification system that sends reminders at the optimal time.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 bg-dark">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-clock-history feature-icon"></i>
+                        <h3 class="card-title">Schedule Optimization</h3>
+                        <p class="card-text">Automatically organize your tasks to match your productivity patterns and preferences for maximum efficiency.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 bg-dark">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-graph-up feature-icon"></i>
+                        <h3 class="card-title">Productivity Analytics</h3>
+                        <p class="card-text">Gain insights into your work habits and patterns with detailed analytics to continuously improve your productivity.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="testimonials-section py-5 bg-dark-gradient">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Users Say</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 bg-dark">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+                        <p class="card-text">"TimeMaster AI has changed how I organize my day. The natural language processing makes creating tasks so intuitive, and the AI prioritization is spot-on!"</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-person-circle fs-2"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-0">Sarah Johnson</h5>
+                                <small class="text-muted">Marketing Director</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 bg-dark">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-half text-warning"></i>
+                        </div>
+                        <p class="card-text">"The Google Calendar integration works flawlessly, and the ML-based task prioritization has helped me focus on what's truly important. My productivity has improved significantly!"</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-person-circle fs-2"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-0">Michael Chen</h5>
+                                <small class="text-muted">Software Engineer</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 bg-dark">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+                        <p class="card-text">"As a busy professional, TimeMaster AI has been a game-changer. The AI assistant understands my needs perfectly, and the optimization suggestions have helped me reclaim hours in my week!"</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-person-circle fs-2"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-0">Emma Rodriguez</h5>
+                                <small class="text-muted">Project Manager</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Master Your Time?</h2>
+        <p class="lead mb-4">Join thousands of users who are boosting their productivity with TimeMaster AI.</p>
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-5">Sign Up Free</a>
+    </div>
+</section>
+{% endblock %}
