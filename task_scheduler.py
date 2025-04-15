@@ -33,6 +33,7 @@ class TaskScheduler:
             category=task_data.get('category')
         )
         
+        
         # If no due date is specified, set it based on other parameters
         if not task.due_date:
             if task.start_time:

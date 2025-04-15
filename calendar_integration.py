@@ -15,6 +15,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 API_SERVICE_NAME = 'calendar'
 API_VERSION = 'v3'
 
+
 class CalendarIntegration:
     def __init__(self):
         self.client_id = os.environ.get('GOOGLE_CLIENT_ID')

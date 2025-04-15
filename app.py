@@ -48,6 +48,7 @@ mail.init_app(app)
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 with app.app_context():
     # Import models
     import models  # noqa: F401

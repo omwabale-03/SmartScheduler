@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 class NotificationService:
     def __init__(self):
         logger.debug("Notification service initialized")
+        
     
     def check_reminders(self):
         """

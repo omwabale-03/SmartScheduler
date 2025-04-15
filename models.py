@@ -17,6 +17,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+
     # Relationships
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
     preferences = db.relationship('UserPreference', backref='user', uselist=False)
@@ -60,7 +61,6 @@ class Task(db.Model):
             'ml_priority_score': self.ml_priority_score,
             'calendar_event_id': self.calendar_event_id
         }
-
 
 class UserPreference(db.Model):
     id = db.Column(db.Integer, primary_key=True)

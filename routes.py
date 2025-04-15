@@ -929,6 +929,7 @@ def disconnect_calendar():
     
     return redirect(url_for('preferences'))
 
+
 @app.route('/optimize-schedule', methods=['POST'])
 @login_required
 def optimize_schedule():

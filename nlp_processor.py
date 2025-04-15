@@ -346,6 +346,7 @@ class NLPProcessor:
                     result['data']['category'] = token.text
                     break
         
+        
         # Check for task update commands
         elif any(phrase in text_lower for phrase in [
             'update task', 'change task', 'modify task', 'edit task',
